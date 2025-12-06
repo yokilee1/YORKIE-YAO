@@ -4,7 +4,7 @@ import { HexagramDisplay } from './components/HexagramDisplay';
 import { CoinStage } from './components/CoinStage';
 import { Interpretation } from './components/Interpretation';
 import { LineValue } from './types';
-import { analyzeHexagram } from './services/geminiService';
+import { analyzeHexagram } from './services/bailianService';
 import { RotateCcw, ArrowRight } from 'lucide-react';
 
 const TOTAL_LINES = 6;

@@ -1,15 +1,31 @@
-
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 import { LineValue } from "../types";
 import { SYSTEM_INSTRUCTION } from "../constants";
 import { getHexagramInfo, getTransformedLines } from "../utils/iching";
 
 export const analyzeHexagram = async (lines: LineValue[], question: string, date: Date): Promise<string> => {
-  if (!process.env.API_KEY) {
-    throw new Error("API Key is missing");
+  const apiKey = process.env.BAILIAN_API_KEY || process.env.API_KEY;
+  
+  // Debugging: Log the key prefix to verify which key is being used
+  if (apiKey) {
+    console.log(`Using API Key starting with: ${apiKey.substring(0, 4)}...`);
+    if (apiKey.startsWith("AIza")) {
+      console.error("CRITICAL ERROR: Detected a Google API Key being used for Alibaba Bailian service.");
+      throw new Error("Configuration Error: You are using a Google API Key (starts with 'AIza') but trying to connect to Alibaba Bailian. Please update your .env.local file with a valid BAILIAN_API_KEY (starts with 'sk-').");
+    }
+  } else {
+    console.error("CRITICAL ERROR: No API Key found.");
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  if (!apiKey) {
+    throw new Error("API Key is missing. Please set BAILIAN_API_KEY in your .env.local file.");
+  }
+
+  const client = new OpenAI({
+    apiKey: apiKey,
+    baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    dangerouslyAllowBrowser: true 
+  });
   
   // Format Date for AI context
   const dateStr = date.toLocaleString('zh-CN', { 
@@ -73,18 +89,18 @@ export const analyzeHexagram = async (lines: LineValue[], question: string, date
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.8, 
-      },
+    const response = await client.chat.completions.create({
+      model: 'qwen-plus',
+      messages: [
+        { role: "system", content: SYSTEM_INSTRUCTION },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.8, 
     });
 
-    return response.text || "解析完成，但未返回文本。";
+    return response.choices[0].message.content || "解析完成，但未返回文本。";
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Bailian API Error:", error);
     throw error;
   }
 };
