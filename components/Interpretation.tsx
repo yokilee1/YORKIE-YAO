@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Loader2 } from 'lucide-react';
 
 interface InterpretationProps {
@@ -25,11 +26,18 @@ export const Interpretation: React.FC<InterpretationProps> = ({ loading, content
                 <div className="prose prose-stone max-w-none mx-auto prose-p:font-serif prose-headings:font-sans prose-headings:font-light prose-strong:font-medium">
                      <div className="text-gray-600 leading-loose space-y-6">
                         <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
                             components={{
                                 h3: ({node, ...props}) => <h3 className="text-lg text-gray-900 mt-10 mb-4 text-center tracking-widest uppercase" {...props} />,
                                 p: ({node, ...props}) => <p className="mb-4 text-justify" {...props} />,
                                 strong: ({node, ...props}) => <strong className="text-gray-900 font-semibold" {...props} />,
                                 ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-2 text-gray-500 ml-4 marker:text-gray-300" {...props} />,
+                                table: ({node, ...props}) => <div className="overflow-x-auto my-8"><table className="min-w-full text-left text-sm border-collapse" {...props} /></div>,
+                                thead: ({node, ...props}) => <thead className="border-b border-gray-200 bg-gray-50/50" {...props} />,
+                                tbody: ({node, ...props}) => <tbody className="divide-y divide-gray-100" {...props} />,
+                                tr: ({node, ...props}) => <tr className="transition-colors hover:bg-gray-50/30" {...props} />,
+                                th: ({node, ...props}) => <th className="py-3 px-4 font-serif font-medium text-gray-600 tracking-wider uppercase text-xs" {...props} />,
+                                td: ({node, ...props}) => <td className="py-3 px-4 text-gray-500 align-top" {...props} />,
                             }}
                         >
                             {content}
